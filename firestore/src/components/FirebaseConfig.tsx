@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { initializeFirebase, FirebaseConfig } from '../config/firebase';
 
-export const FirebaseConfigPanel: React.FC = () => {
+interface FirebaseConfigPanelProps {
+    onConfigured: () => void;
+}
+
+export const FirebaseConfigPanel: React.FC<FirebaseConfigPanelProps> = ({ onConfigured }) => {
     const [config, setConfig] = useState<FirebaseConfig>({
         apiKey: '',
         authDomain: '',
@@ -12,6 +16,7 @@ export const FirebaseConfigPanel: React.FC = () => {
     });
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -19,17 +24,29 @@ export const FirebaseConfigPanel: React.FC = () => {
             ...prev,
             [name]: value
         }));
+        // Clear any previous errors when user makes changes
+        setError(null);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsLoading(true);
+        setError(null);
+        
         try {
-            initializeFirebase(config);
+            // Validate required fields
+            if (!config.apiKey || !config.projectId) {
+                throw new Error('API Key and Project ID are required');
+            }
+
+            await initializeFirebase(config);
             setSuccess(true);
-            setError(null);
+            onConfigured();
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to initialize Firebase');
             setSuccess(false);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -38,7 +55,7 @@ export const FirebaseConfigPanel: React.FC = () => {
             <h2>Firebase Configuration</h2>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div>
-                    <label htmlFor="apiKey">API Key:</label>
+                    <label htmlFor="apiKey">API Key: *</label>
                     <input
                         type="text"
                         id="apiKey"
@@ -46,6 +63,7 @@ export const FirebaseConfigPanel: React.FC = () => {
                         value={config.apiKey}
                         onChange={handleChange}
                         required
+                        disabled={isLoading}
                     />
                 </div>
                 <div>
@@ -56,11 +74,11 @@ export const FirebaseConfigPanel: React.FC = () => {
                         name="authDomain"
                         value={config.authDomain}
                         onChange={handleChange}
-                        required
+                        disabled={isLoading}
                     />
                 </div>
                 <div>
-                    <label htmlFor="projectId">Project ID:</label>
+                    <label htmlFor="projectId">Project ID: *</label>
                     <input
                         type="text"
                         id="projectId"
@@ -68,6 +86,7 @@ export const FirebaseConfigPanel: React.FC = () => {
                         value={config.projectId}
                         onChange={handleChange}
                         required
+                        disabled={isLoading}
                     />
                 </div>
                 <div>
@@ -78,7 +97,7 @@ export const FirebaseConfigPanel: React.FC = () => {
                         name="storageBucket"
                         value={config.storageBucket}
                         onChange={handleChange}
-                        required
+                        disabled={isLoading}
                     />
                 </div>
                 <div>
@@ -89,7 +108,7 @@ export const FirebaseConfigPanel: React.FC = () => {
                         name="messagingSenderId"
                         value={config.messagingSenderId}
                         onChange={handleChange}
-                        required
+                        disabled={isLoading}
                     />
                 </div>
                 <div>
@@ -100,18 +119,23 @@ export const FirebaseConfigPanel: React.FC = () => {
                         name="appId"
                         value={config.appId}
                         onChange={handleChange}
-                        required
+                        disabled={isLoading}
                     />
                 </div>
-                <button type="submit" style={{ 
-                    padding: '10px', 
-                    backgroundColor: '#007AFF', 
-                    color: 'white', 
-                    border: 'none', 
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                }}>
-                    Initialize Firebase
+                <button 
+                    type="submit" 
+                    style={{ 
+                        padding: '10px', 
+                        backgroundColor: '#007AFF', 
+                        color: 'white', 
+                        border: 'none', 
+                        borderRadius: '4px',
+                        cursor: isLoading ? 'not-allowed' : 'pointer',
+                        opacity: isLoading ? 0.7 : 1
+                    }}
+                    disabled={isLoading}
+                >
+                    {isLoading ? 'Initializing...' : 'Initialize Firebase'}
                 </button>
             </form>
             {error && <div style={{ color: 'red', marginTop: '10px' }}>{error}</div>}

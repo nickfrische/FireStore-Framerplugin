@@ -1,9 +1,9 @@
-import { addPropertyControls, ControlType } from "framer"
+import { addPropertyControls, ControlType } from "framer-plugin"
 import { FirebaseConfigPanel } from "./components/FirebaseConfig"
 import { FirestoreViewer } from "./components/FirestoreViewer"
 import { useState } from "react"
 
-export default function App(props) {
+export function App(props: any) {
     const [isConfigured, setIsConfigured] = useState(false)
 
     return (
