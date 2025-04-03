@@ -1,0 +1,8 @@
+{
+    "name": "Firestore",
+    "id": "fstore",
+    "enabled": true,
+    "api": "1.0.0",
+    "main": "index.html",
+    "modes": ["CANVAS", "PREVIEW"]
+} 

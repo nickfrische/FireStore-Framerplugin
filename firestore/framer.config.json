@@ -1,0 +1,7 @@
+{
+    "name": "Firestore",
+    "id": "fstore",
+    "entry": "src/main.tsx",
+    "api": "1.0.0",
+    "modes": ["CANVAS", "PREVIEW"]
+} 
